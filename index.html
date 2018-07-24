@@ -16,6 +16,7 @@
 </head>
 
 <body>
+    <script type='text/javascript' src='js/tween.js'></script>
     <script src="js/three.js"></script>
     <script>
         var scene = new THREE.Scene();
@@ -65,29 +66,44 @@
             var boxMesh = new THREE.Mesh(cubeGeometry, cubeMat);
             boxMesh.castShadow = true;
             boxMesh.position.z = -.5;
-            boxMesh.position.x = i/1.9;
+            boxMesh.position.x = i / 1.9;
             scene.add(boxMesh);
         }
 
         camera.position.z = 2;
         camera.position.y = 0.5;
 
-        var moveX = 0;
-
+        var moveX = 0.5;
+        var now = { x: 0 };
+        var then = { x: 0 };
         document.addEventListener('keydown', function (e) {
             if (e.keyCode === 37) {
-                moveX = -0.1;
+                now.x = bulbLight.position.x;
+                then.x = bulbLight.position.x - moveX;
+                var tween = new TWEEN.Tween(now).to(then, 1000);
+                tween.onUpdate(function () {
+                    bulbLight.position.x = now.x;
+                    camera.position.x = now.x;
+                });
+                tween.easing(TWEEN.Easing.Elastic.InOut);
+                tween.start();
             } else if (e.keyCode === 39) {
-                moveX = 0.1;
+                now.x = bulbLight.position.x;
+                then.x = bulbLight.position.x + moveX;
+                var tween = new TWEEN.Tween(now).to(then, 1000);
+                tween.onUpdate(function () {
+                    bulbLight.position.x = now.x;
+                    camera.position.x = now.x;
+                });
+                tween.easing(TWEEN.Easing.Elastic.InOut);
+                tween.start();
             }
         });
 
         function animate() {
             requestAnimationFrame(animate);
 
-            bulbLight.position.x += moveX;
-            camera.position.x += moveX;
-            moveX = 0;
+            TWEEN.update();
 
             renderer.render(scene, camera);
         }
