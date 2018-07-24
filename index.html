@@ -1,0 +1,98 @@
+<html>
+
+<head>
+    <meta charset=utf-8>
+    <title>My first three.js app</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%
+        }
+    </style>
+</head>
+
+<body>
+    <script src="js/three.js"></script>
+    <script>
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.physicallyCorrectLights = true;
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
+        renderer.shadowMap.enabled = true;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        var bulbGeometry = new THREE.SphereBufferGeometry(0.02, 16, 8);
+        bulbLight = new THREE.PointLight(0xffee88, 1, 100, 2);
+        bulbMat = new THREE.MeshStandardMaterial({
+            emissive: 0xffffff,
+            emissiveIntensity: 1,
+            color: 0x000000
+        });
+        bulbLight.add(new THREE.Mesh(bulbGeometry, bulbMat));
+        bulbLight.position.set(0, .2, 0);
+        bulbLight.castShadow = true;
+        scene.add(bulbLight);
+
+        floorMat = new THREE.MeshStandardMaterial({
+            roughness: 0.8,
+            color: 0xffffff,
+            metalness: 0.2,
+            bumpScale: 0.0005
+        });
+        var floorGeometry = new THREE.PlaneBufferGeometry(20, 20);
+        var floorMesh = new THREE.Mesh(floorGeometry, floorMat);
+        floorMesh.receiveShadow = true;
+        floorMesh.rotation.x = -Math.PI / 2.0;
+        scene.add(floorMesh);
+
+        var cubeMat = new THREE.MeshStandardMaterial({
+            roughness: 0.7,
+            color: 0xffffff,
+            bumpScale: 0.002,
+            metalness: 0.2
+        });
+        for (var i = -15; i <= 15; i++) {
+            var cubeGeometry = new THREE.BoxBufferGeometry(.5, Math.random() + 0.5, .5);
+            var boxMesh = new THREE.Mesh(cubeGeometry, cubeMat);
+            boxMesh.castShadow = true;
+            boxMesh.position.z = -.5;
+            boxMesh.position.x = i/1.9;
+            scene.add(boxMesh);
+        }
+
+        camera.position.z = 2;
+        camera.position.y = 0.5;
+
+        var moveX = 0;
+
+        document.addEventListener('keydown', function (e) {
+            if (e.keyCode === 37) {
+                moveX = -0.1;
+            } else if (e.keyCode === 39) {
+                moveX = 0.1;
+            }
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            bulbLight.position.x += moveX;
+            camera.position.x += moveX;
+            moveX = 0;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+
+</html>
