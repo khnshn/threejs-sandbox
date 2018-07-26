@@ -22,7 +22,7 @@
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        var renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.physicallyCorrectLights = true;
         renderer.gammaInput = true;
         renderer.gammaOutput = true;
@@ -32,7 +32,7 @@
         document.body.appendChild(renderer.domElement);
 
         var bulbGeometry = new THREE.SphereBufferGeometry(0.02, 16, 8);
-        bulbLight = new THREE.PointLight(0xffee88, 1, 100, 2);
+        bulbLight = new THREE.PointLight(0xffee88, .5, 100, 2);
         bulbMat = new THREE.MeshStandardMaterial({
             emissive: 0xffffff,
             emissiveIntensity: 1,
@@ -61,10 +61,11 @@
             bumpScale: 0.002,
             metalness: 0.2
         });
-        for (var i = -15; i <= 15; i++) {
+        for (var i = -18; i <= 18; i++) {
             var cubeGeometry = new THREE.BoxBufferGeometry(.5, Math.random() + 0.5, .5);
             var boxMesh = new THREE.Mesh(cubeGeometry, cubeMat);
             boxMesh.castShadow = true;
+            boxMesh.receiveShadow = true;
             boxMesh.position.z = -.5;
             boxMesh.position.x = i / 1.9;
             scene.add(boxMesh);
@@ -76,27 +77,28 @@
         var moveX = 0.5;
         var now = { x: 0 };
         var then = { x: 0 };
+        var canTween = true;
         document.addEventListener('keydown', function (e) {
-            if (e.keyCode === 37) {
-                now.x = bulbLight.position.x;
-                then.x = bulbLight.position.x - moveX;
-                var tween = new TWEEN.Tween(now).to(then, 1000);
-                tween.onUpdate(function () {
-                    bulbLight.position.x = now.x;
-                    camera.position.x = now.x;
-                });
-                tween.easing(TWEEN.Easing.Elastic.InOut);
-                tween.start();
-            } else if (e.keyCode === 39) {
-                now.x = bulbLight.position.x;
-                then.x = bulbLight.position.x + moveX;
-                var tween = new TWEEN.Tween(now).to(then, 1000);
-                tween.onUpdate(function () {
-                    bulbLight.position.x = now.x;
-                    camera.position.x = now.x;
-                });
-                tween.easing(TWEEN.Easing.Elastic.InOut);
-                tween.start();
+            if (e.keyCode === 37 || e.keyCode === 39) {
+                if (canTween) {
+                    canTween = false;
+                    now.x = bulbLight.position.x;
+                    if (e.keyCode === 37) {
+                        then.x = bulbLight.position.x - moveX;
+                    } else {
+                        then.x = bulbLight.position.x + moveX;
+                    }
+                    var tween = new TWEEN.Tween(now).to(then, 1000);
+                    tween.onUpdate(function () {
+                        bulbLight.position.x = now.x;
+                        camera.position.x = now.x;
+                    });
+                    tween.onComplete(function () {
+                        canTween = true;
+                    });
+                    tween.easing(TWEEN.Easing.Quartic.InOut);
+                    tween.start();
+                }
             }
         });
 
